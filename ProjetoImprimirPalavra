@@ -1,0 +1,161 @@
+.model small
+.stack
+.data
+
+texto1 db "INSIRA UMA PALAVRA:",0
+string 6 DUP (?)
+texto2 db "A PALAVRA FOI:",0
+.code
+.startup
+
+;parte 1:imprimir
+MOV si,offset texto1
+
+IMPRIMIR:
+MOV al,[si]
+CMP al,0
+JE IMPRIMIU
+INC si
+MOV ah,14
+INT 10h
+JMP IMPRIMIR
+IMPRIMIU:
+
+;parte 2:leitura do teclado
+MOV si,offset string
+MOV cx,0 ;numero
+
+INPUT:
+MOV ah,00 ;espera
+INT 16h
+CMP al,13 ;tecla enter
+JE FIM_INPUT
+CMP al,8 ;apagar
+JE APAGAR
+CMP cx,9 ;contador(talvez precise alterar)
+INC cx ;++
+MOV [si],al
+INC si
+MOV ah,14 ;mostrar a tecla precionada na tela
+INT 10h
+JMP INPUT
+
+APAGAR:
+CMP cx,0
+JE beep
+DEC si
+DEC cx
+MOV al,8
+MOV ah,14
+INT 10h
+
+MOV al,32
+MOV ah,14
+INT 10h   
+MOV al,8 ;recuar
+MOV ah,14
+INT 10h
+JMP INPUT ;retorna ao input
+
+beep:
+MOV al,7
+MOV ah,14
+INT 10h
+JMP INPUT
+
+FIM_INPUT:
+MOV al,0
+MOV [si],al
+
+;parte 3:fazer isso ir para a tela do usuario
+
+
+;stack
+MOV si,offset string
+MOV ax,0
+PUSH ax
+PP:  
+MOV ax,[si]
+CMP al,0
+JE FIM_PP
+PUSH ax
+INC si
+JMP PP
+FIM_PP:
+
+;stack string
+MOV si,offset string
+MOV ax,0
+PUSH ax
+POP_STACK:
+MOV ax,[si]
+CMP al,0
+JE FIM_POP_STACK
+MOV [si],al
+INC si
+JMP POP_STACK
+FIM_POP_STACK:
+MOV [si],0 
+
+  mov dx,13
+  mov ah,2
+  int 21h  
+  mov dx,10
+  mov ah,2
+  int 21h
+
+MOV si,offset texto2
+TEXTO_POS:
+MOV al,[si]
+CMP al,0
+JE TEXTO_POS_FIM
+INC si
+MOV ah,14
+INT 10h
+JMP TEXTO_POS
+TEXTO_POS_FIM:
+
+  mov dx,13
+  mov ah,2
+  int 21h  
+  mov dx,10
+  mov ah,2
+  int 21h
+
+
+;tela
+
+mov si,offset string
+
+PARA_TELA:
+
+mov al,[si]
+
+cmp al,0
+
+je PARA_TELA_FIM
+
+inc si
+
+mov ah,14
+
+int 10h
+
+jmp PARA_TELA
+
+PARA_TELA_FIM:
+
+ mov dx,13
+  mov ah,2
+  int 21h  
+  mov dx,10
+  mov ah,2
+  int 21h
+  
+jmp .startup 
+
+
+.exit
+end
+
+
